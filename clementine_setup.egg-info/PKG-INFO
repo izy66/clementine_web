@@ -1,0 +1,9 @@
+Metadata-Version: 2.2
+Name: clementine-setup
+Version: 0.1.0
+Requires-Dist: flask
+Requires-Dist: flask-cors
+Requires-Dist: sentence-transformers
+Requires-Dist: faiss-cpu
+Requires-Dist: transformers
+Dynamic: requires-dist
