@@ -3,13 +3,18 @@ import { LocalStorage } from './storage/LocalStorage';
 
 export class TransactionService {
   private storage: LocalStorage;
+  private listeners: (() => void)[] = [];
 
   constructor() {
     this.storage = new LocalStorage();
   }
 
   async addTransaction(transaction: Transaction): Promise<void> {
+    console.log('Adding transaction:', transaction);
     await this.storage.addTransaction(transaction);
+    
+    // Optionally notify listeners
+    this.notifyDataChange();
   }
 
   async getAllTransactions(): Promise<Transaction[]> {
@@ -57,5 +62,13 @@ export class TransactionService {
 
   public async clearAllTransactions(): Promise<void> {
     await this.storage.clearAllTransactions();
+  }
+
+  addChangeListener(listener: () => void) {
+    this.listeners.push(listener);
+  }
+
+  private notifyDataChange() {
+    this.listeners.forEach(listener => listener());
   }
 } 

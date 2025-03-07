@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import Papa from 'papaparse';
 import { Transaction, TransactionType, TransactionSource } from '../types/transaction';
+import { v4 as uuidv4 } from 'uuid';
+import { LARGE_GIFT_THRESHOLD } from './charts/ChartConstants';
+import { calcGeneratorDuration } from 'framer-motion';
 
 interface DataImportProps {
   onImport: (transactions: Transaction[]) => Promise<void>;
@@ -21,9 +24,6 @@ const DataImport: React.FC<DataImportProps> = ({ onImport }) => {
 
   const processTransaction = (row: CSVRow): Transaction | null => {
     try {
-      // Log the raw row first
-      console.log('Processing row:', row);
-
       // Check each required field individually
       if (!row.Date?.trim()) {
         console.warn('Missing Date:', row);
@@ -39,14 +39,12 @@ const DataImport: React.FC<DataImportProps> = ({ onImport }) => {
       }
 
       // Skip transfers but log them
-      if (row.Category === 'Transfer in' || row.Category === 'Transfer out') {
+      if (row.Category === 'Transfers') {
         console.log('Skipping transfer:', row);
         return null;
       }
 
-      // Log amount parsing
       const rawAmount = row.Amount.replace(/[^-0-9.]/g, '');
-      console.log('Parsing amount:', row.Amount, '→', rawAmount);
       
       const parsedAmount = parseFloat(rawAmount);
       if (isNaN(parsedAmount)) {
@@ -54,45 +52,27 @@ const DataImport: React.FC<DataImportProps> = ({ onImport }) => {
         return null;
       }
 
-      // Log source determination
-      const rawSource = row.Source?.trim() || 'AMEX';
-      console.log('Source determination:', row.Source, '→', rawSource);
-      
-      const source = rawSource === 'AMEX' || rawSource === 'WS' 
-        ? rawSource as TransactionSource 
-        : 'AMEX';
-
-      let type: TransactionType;
       let amount: number;
+      let type: TransactionType;
 
-      // Log transaction type determination
-      if (source === 'AMEX') {
-        amount = parsedAmount;
-        type = parsedAmount > 0 ? 'expense' : 'refund';
-        console.log('AMEX transaction:', { amount, type });
-      } else if (source === 'WS') {
-        amount = parsedAmount;
-        type = parsedAmount > 0 ? 'income' : 'expense';
-        console.log('WS transaction:', { amount, type });
-      } else {
-        amount = Math.abs(parsedAmount);
-        type = 'expense';
-        console.log('Default transaction:', { amount, type });
-      }
+      amount = parsedAmount;
+      // For other sources, use category to determine type
+      type = row.Category === 'Income' ? 'income' : 
+              row.Category === 'Transfers' ? 'transfer' : 'expense';
+
+      let category = row.Category.trim() == 'Income' && amount > LARGE_GIFT_THRESHOLD ? 'Gifts' : row.Category.trim();
 
       const transaction: Transaction = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         date: row.Date.trim(),
         description: row.Description?.trim() || '',
         amount,
-        category: row.Category.trim(),
+        category: category,
         merchant: row.Description?.trim().split(' ')[0] || 'Unknown',
         type,
-        source
+        source: row.Source as TransactionSource || 'Unknown',
       };
 
-      // Log successful transaction creation
-      console.log('Created transaction:', transaction);
       return transaction;
 
     } catch (error) {
@@ -101,61 +81,40 @@ const DataImport: React.FC<DataImportProps> = ({ onImport }) => {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const processChunk = async (
+    rows: CSVRow[], 
+    chunkSize: number = 500
+  ): Promise<Transaction[]> => {
+    const chunks: Transaction[] = [];
+    
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      
+      // Process chunk asynchronously
+      await new Promise(resolve => setTimeout(resolve, 0));
+      
+      const processedChunk = chunk
+        .map(processTransaction)
+        .filter((t): t is Transaction => t !== null);
+      
+      chunks.push(...processedChunk);
+    }
+    
+    return chunks;
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Add immediate log
-    console.log('File selected:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
-
     setIsProcessing(true);
-
-    // Test log before parsing
-    console.log('About to parse file');
 
     Papa.parse<CSVRow>(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
-        // Immediate log in complete callback
-        console.log('Raw results:', {
-          rowCount: results.data.length,
-          sampleRow: results.data[0]
-        });
-        
+      complete: async (results) => {
         try {
-          console.log('CSV parsing complete. Total rows:', results.data.length);
-          console.log('Headers:', Object.keys(results.data[0] || {}));
-          console.log('First row:', results.data[0]);
-
-          // Process all rows and filter out nulls
-          const transactions = results.data
-            .map((row, index) => {
-              console.log(`Processing row ${index + 1}/${results.data.length}`);
-              return processTransaction(row);
-            })
-            .filter((t): t is Transaction => {
-              if (t === null) {
-                console.log('Filtered out null transaction');
-                return false;
-              }
-              return true;
-            });
-
-          console.log('Processing complete:');
-          console.log('- Total rows:', results.data.length);
-          console.log('- Valid transactions:', transactions.length);
-          console.log('- Filtered out:', results.data.length - transactions.length);
-
-          // Sort transactions by date
-          transactions.sort((a, b) => 
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-
+          const transactions = await processChunk(results.data);
           onImport(transactions);
         } catch (error) {
           console.error('Error processing CSV:', error);

@@ -1,5 +1,5 @@
-export type TransactionType = 'expense' | 'income' | 'refund';
-export type TransactionSource = 'AMEX' | 'WS';
+export type TransactionType = 'expense' | 'income' | 'transfer';
+export type TransactionSource = 'AMEX' | 'WS' | 'CIBC_DEB' | 'CIBC_CRE' | 'CHED' | 'SCOT_DEB' | 'SCOT_CRE' | 'Unknown';
 
 export interface Transaction {
   id: string;

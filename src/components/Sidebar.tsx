@@ -2,17 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {
-  activePanel: string;
-  onPanelChange: (panel: string) => void;
+  activePanel: 'insights' | 'history' | 'assistant' | 'categories';
+  onPanelChange: (panel: 'insights' | 'history' | 'assistant' | 'categories') => void;
+  panels: Array<{
+    id: 'insights' | 'history' | 'assistant' | 'categories';
+    label: string;
+    icon: string;
+  }>;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
-  const navItems = [
-    { id: 'visual', icon: '📊', label: 'Insights' },
-    { id: 'history', icon: '📝', label: 'History' },
-    { id: 'assistant', icon: '🤖', label: 'AI Assistant' }
-  ];
-
+const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange, panels }) => {
   return (
     <div className="w-64 bg-white shadow-lg h-screen fixed left-0 top-0">
       <div className="p-6">
@@ -21,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
       </div>
       
       <nav className="mt-6">
-        {navItems.map(item => (
+        {panels.map(item => (
           <motion.button
             key={item.id}
             whileHover={{ x: 5 }}

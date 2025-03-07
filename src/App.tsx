@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import TransactionChat from './components/TransactionChat';
 import TransactionList from './components/TransactionList';
@@ -8,14 +8,15 @@ import DataImport from './components/DataImport';
 import { Transaction } from './types/transaction';
 import { TransactionService } from './services/TransactionService';
 import Papa from 'papaparse';
+import CategoryManager from './components/CategoryManager';
+import { categoryEmojis } from './utils/categoryEmojis';
 
 const App: React.FC = () => {
-  const [activePanel, setActivePanel] = useState('visual');
+  const [activePanel, setActivePanel] = useState<'insights' | 'history' | 'assistant' | 'categories'>('insights');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionService] = useState(() => new TransactionService());
 
   useEffect(() => {
-    // Load transactions on mount
     const loadTransactions = async () => {
       try {
         const loadedTransactions = await transactionService.getAllTransactions();
@@ -46,21 +47,14 @@ const App: React.FC = () => {
 
       // Clear existing data first
       await transactionService.clearAllTransactions();
-      setTransactions([]);
       
       // Add new transactions
       for (const transaction of importedTransactions) {
-        console.log('Adding transaction:', transaction);
         await transactionService.addTransaction(transaction);
       }
       
-      // Update state
+      // Force refresh by loading all transactions again
       const updatedTransactions = await transactionService.getAllTransactions();
-      console.log('Retrieved transactions after import:', {
-        count: updatedTransactions.length,
-        sample: updatedTransactions.slice(0, 2)
-      });
-      
       setTransactions(updatedTransactions);
     } catch (error) {
       console.error('Failed to import transactions:', error);
@@ -113,51 +107,95 @@ const App: React.FC = () => {
     }
   };
 
-  const panelVariants = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 }
+  const handleMergeCategories = async (sourceCategory: string, targetCategory: string) => {
+    try {
+      const allTransactions = await transactionService.getAllTransactions();
+      
+      // Update all transactions with source category to target category
+      for (const transaction of allTransactions) {
+        if (transaction.category === sourceCategory) {
+          await transactionService.updateTransaction({
+            ...transaction,
+            category: targetCategory
+          });
+        }
+      }
+      
+      // Refresh transactions
+      const updatedTransactions = await transactionService.getAllTransactions();
+      setTransactions(updatedTransactions);
+    } catch (error) {
+      console.error('Error merging categories:', error);
+    }
+  };
+
+  const handleAddCategory = async (category: string, emoji: string) => {
+    try {
+      // Update category emojis
+      const updatedEmojis = {
+        ...categoryEmojis,
+        [category]: emoji
+      };
+      
+      // Save to localStorage (you'll need to implement this)
+      localStorage.setItem('categoryEmojis', JSON.stringify(updatedEmojis));
+      
+      // Refresh the app (or update state)
+      window.location.reload();
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
   };
 
   const renderActivePanel = () => {
     switch (activePanel) {
-      case 'visual':
-        return (
-          <motion.div {...panelVariants}>
-            <TransactionCharts transactions={transactions} />
-          </motion.div>
-        );
+      case 'insights':
+        return <TransactionCharts transactions={transactions} />;
       case 'history':
         return (
-          <motion.div {...panelVariants}>
-            <TransactionList 
-              transactions={transactions}
-              onAddTransaction={handleAddTransaction}
-              onUpdateTransaction={handleUpdateTransaction}
-              onDeleteTransaction={handleDeleteTransaction}
-            />
-          </motion.div>
+          <TransactionList
+            transactions={transactions}
+            onAddTransaction={handleAddTransaction}
+            onUpdateTransaction={handleUpdateTransaction}
+            onDeleteTransaction={handleDeleteTransaction}
+          />
         );
       case 'assistant':
+        return <TransactionChat transactions={transactions} />;
+      case 'categories':
         return (
-          <motion.div {...panelVariants}>
-            <TransactionChat />
-          </motion.div>
+          <CategoryManager
+            transactions={transactions}
+            onMergeCategories={handleMergeCategories}
+            onAddCategory={handleAddCategory}
+          />
         );
+      default:
+        return null;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar activePanel={activePanel} onPanelChange={setActivePanel} />
+      <Sidebar
+        activePanel={activePanel}
+        onPanelChange={setActivePanel}
+        panels={[
+          { id: 'insights', label: 'Insights', icon: '📊' },
+          { id: 'history', label: 'History', icon: '📝' },
+          { id: 'categories', label: 'Categories', icon: '🏷️' },
+          { id: 'assistant', label: 'Assistant', icon: '🤖' }
+        ]}
+      />
       
       <div className="ml-64 min-h-screen">
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-6 flex justify-between items-center">
             <h1 className="text-xl font-semibold text-gray-800">
-              {activePanel === 'visual' && 'Insights'}
+              {activePanel === 'insights' && 'Insights'}
               {activePanel === 'history' && 'History'}
               {activePanel === 'assistant' && 'AI Assistant'}
+              {activePanel === 'categories' && 'Category Management'}
             </h1>
             <div className="flex gap-4">
               <DataImport onImport={handleImportData} />

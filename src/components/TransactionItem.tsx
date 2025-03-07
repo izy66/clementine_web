@@ -103,7 +103,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
       </div>
       <div className="flex items-center gap-6">
         <span className={`text-lg font-semibold ${
-          transaction.type === 'refund' ? 'text-red-500' : 'text-gray-900'
+          transaction.type === 'income' || 
+          (transaction.type === 'expense' && transaction.amount > 0) ? 
+          'text-green-600' : 'text-red-600'
         }`}>
           ${Math.abs(transaction.amount).toFixed(2)}
         </span>
