@@ -1,0 +1,85 @@
+# Transaction Analysis App: UI Design System
+
+## Color System
+- Brand colors:
+  - Primary: Blue (#4f46e5)
+  - Success: Green (#22c55e)
+  - Warning: Yellow (#eab308)
+  - Danger: Red (#ef4444)
+  - Info: Purple (#8b5cf6)
+  
+- Semantic colors:
+  - Income: Green
+  - Expense: Red
+  - Transfer: Blue
+  - Neutral: Gray
+
+## Typography
+- Font family: System default sans-serif
+- Size hierarchy:
+  - Headings: xl, lg, md
+  - Body: base, sm
+  - Micro: xs
+- Weight:
+  - Regular: 400
+  - Medium: 500
+  - Semibold: 600
+  - Bold: 700
+
+## Spacing System
+- Based on Tailwind's default scale
+- Common patterns:
+  - Card padding: p-6
+  - Content margin: mb-6
+  - Button padding: px-4 py-2
+  - Item separation: gap-3
+
+## Component Design
+
+### Cards
+- White background
+- Rounded corners (rounded-xl)
+- Subtle shadow (shadow-md)
+- Consistent padding (p-6)
+
+### Buttons
+- Text buttons for in-card actions
+- Solid buttons for primary actions
+- Color indicates purpose (blue: primary, red: destructive)
+- Feedback on hover/active states
+
+### Charts
+- Consistent size (h-[400px])
+- Interactive elements have pointer cursor
+- Consistent color scheme across chart types
+- Tooltips for detailed information
+
+### Forms
+- Clearly labeled fields
+- Validation feedback
+- Consistent button placement
+- Modal container for focus
+
+### Lists
+- Virtual rendering for performance
+- Clear item separation
+- Hover states for interactive items
+- Consistent information hierarchy
+
+## Animation Guidelines
+- Subtle motion with Framer Motion
+- Entry animations for modal dialogs
+- Hover transitions for interactive elements
+- Loading state animations
+
+## Accessibility Considerations
+- Sufficient color contrast
+- Keyboard navigation support
+- Screen reader friendly labeling
+- Focus management in modals
+
+## Responsive Design
+- Mobile-first approach
+- Flexible layouts using flexbox
+- Appropriate spacing on different devices
+- Touch-friendly targets on mobile 

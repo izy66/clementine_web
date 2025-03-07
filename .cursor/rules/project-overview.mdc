@@ -1,0 +1,101 @@
+# Transaction Analysis App: Project Overview
+
+## Project Purpose
+This is a financial transaction analysis application that allows users to:
+- Import and manage financial transactions from various sources
+- Visualize spending patterns through multiple chart types
+- Categorize and organize transactions
+- Analyze spending trends over time
+- Split transactions into multiple parts
+- Filter and sort transaction history
+
+## Core Architecture
+
+### Frontend Framework
+- React with TypeScript for type safety
+- Tailwind CSS for styling
+- Framer Motion for animations
+- Recharts for data visualization
+
+### Data Management
+- Client-side data processing with memoization
+- Custom transaction preprocessing for matching transfers
+- Modular utility functions for transaction manipulation
+- Category-based grouping and analysis
+
+### State Management
+- React useState and useMemo for component state
+- No global state management currently (potential future improvement)
+
+## Key Components
+
+### Data Visualization
+- MonthlyTrendView: Shows net income/expense over time
+- PieChartView: Displays categorical spending breakdown
+- YearlySummaryView: Annual financial summary with detailed metrics
+
+### Transaction Management
+- TransactionListView: Virtualized list of transactions with sort capabilities
+- TransactionModal: Reusable modal for displaying transaction lists from any context
+- TransactionForm: Form for editing transaction details
+- SplitTransactionForm: Special form for dividing transactions into parts
+
+### Data Import/Export
+- DataImport: CSV import functionality with preprocessing
+- Support for multiple financial institution formats
+
+## Design Principles
+
+### UI/UX Philosophy
+1. Minimize cognitive load with clean, simple interfaces
+2. Consistent spacing and component design
+3. Interactive elements clearly indicate their functionality
+4. Meaningful feedback for user actions
+5. Responsive design supporting different screen sizes
+
+### Data Visualization Guidelines
+1. Consistent color scheme for income/expense representation
+2. Interactive charts that respond to user clicks
+3. Tooltips provide additional context on hover
+4. Clear visual hierarchy of information
+
+### Architectural Patterns
+1. Component composition over inheritance
+2. Separation of UI and data processing logic
+3. Memoization for performance optimization
+4. Reusable components with clear props interfaces
+
+## Current Status & Recent Changes
+
+### Recently Implemented Features
+- Transaction categorization with emoji support
+- Virtualized transaction lists for performance
+- Consistent transaction modal display across the application
+- Fixed layout issues with transaction cards
+- Monthly data filtering and visualization
+- Category-based spending analysis
+
+### Known Issues
+- Large import performance could be improved
+- Some UI components need responsive design improvements
+- Transaction matching algorithm needs refinement
+
+### Planned Improvements
+- Database integration for persistent storage
+- User authentication system
+- More advanced filtering options
+- Budget tracking functionality
+- Recurring transaction detection
+- Export functionality for reports
+
+## Data Structure
+
+### Key Types
+- Transaction: The core data model with properties like id, date, amount, category
+- TransactionType: 'expense' | 'income' | 'transfer'
+- TransactionSource: Bank/payment sources like 'AMEX', 'CIBC_DEB', etc.
+
+### Constants
+- Chart-related constants defined in ChartConstants.ts
+- Category exclusion lists for various analytical views
+- Threshold values for special treatment (e.g., LARGE_GIFT_THRESHOLD) 

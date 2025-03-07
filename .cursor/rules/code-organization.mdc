@@ -1,0 +1,56 @@
+# Transaction Analysis App: Code Organization
+
+## Project Structure
+- src/
+  - components/
+    - charts/: All visualization components
+    - forms/: Input forms and related components
+    - ui/: General UI components
+  - utils/: Helper functions and utilities
+  - types/: TypeScript type definitions
+  - styles/: Global styles and theme definitions
+  - hooks/: Custom React hooks
+
+## Component Naming Conventions
+- [Feature]View: Major view components (e.g., TransactionListView)
+- [Feature]Form: Form components (e.g., TransactionForm)
+- [Chart Type]View: Visualization components (e.g., PieChartView)
+
+## Code Style Guidelines
+- Functional components with hooks
+- Explicit typing for all props and state
+- Consistent destructuring of props
+- Memoization of expensive calculations
+- Clear separation of UI and business logic
+
+## State Management Patterns
+- Component state for UI-specific state
+- Lifted state for shared data between components
+- Prop drilling for moderate component hierarchies
+- Potential for context API in future expansion
+
+## Data Processing Flow
+1. Import raw transaction data (CSV)
+2. Preprocess to normalize data structure
+3. Apply category rules and filters
+4. Transform for visualization needs
+5. Render in appropriate chart/list components
+
+## Component Props Philosophy
+- Required props are non-optional
+- Optional props have sensible defaults
+- Boolean flags use positive naming (e.g., `showCategory` instead of `hideCategory`)
+- Handler functions named with `onEvent` pattern
+- Async handlers return Promises
+
+## Performance Considerations
+- Virtual rendering for long lists (useVirtualizer)
+- Memoization for expensive calculations
+- Optimized rerenders with appropriate dependency arrays
+- Lazy loading for modal content
+
+## Error Handling Strategy
+- Try/catch blocks for data processing functions
+- Error boundaries for component failures
+- User-friendly error messages
+- Fallback UI for failed components 

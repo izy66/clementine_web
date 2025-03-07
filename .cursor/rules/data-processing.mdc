@@ -1,0 +1,80 @@
+# Transaction Analysis App: Data Processing
+
+## Transaction Preprocessing
+
+### Matching Algorithm
+- The `preprocessTransactions` function identifies related transactions (transfers between accounts)
+- Uses amount (absolute value) and description similarity
+- Returns a Set of matched transaction IDs for filtering
+
+### Category Management
+- Categories have associated emoji via `getCategoryEmoji` utility
+- Some categories are excluded from certain analysis views (defined in ChartConstants)
+- Special handling for large income transactions (gift detection)
+
+### Date Handling
+- Dates stored in ISO format (YYYY-MM-DD)
+- Grouped by month for trend analysis (slice to YYYY-MM)
+- Formatted for display using `formatMonth` utility
+
+## Chart Data Transformations
+
+### Monthly Trend View
+- Groups transactions by month
+- Calculates net income/expense
+- Excludes certain categories and matched transactions
+- Special treatment for large gifts and tuition
+
+### Pie Chart View
+- Shows categorical spending breakdown for selected month
+- Combines small categories into "Other"
+- Calculates percentage of total spending
+- Limits to top N categories (configurable)
+
+### Yearly Summary
+- Groups by year
+- Separate income and expense calculations
+- Normalized visualization using percentage bars
+- Year-to-date comparisons
+
+## Data Import Processing
+
+### CSV Import
+- Parses CSV files with Papa Parse
+- Maps CSV fields to transaction properties
+- Validates required fields and data types
+- Normalizes inconsistent formats
+- Handles different bank/source formats
+
+### Data Cleaning
+- Trims whitespace from text fields
+- Normalizes amount signs (expenses negative, income positive)
+- Categorizes transactions based on description or import rules
+- Generates unique IDs for new transactions
+
+## Performance Optimizations
+
+### Memoization
+- Heavy calculations wrapped in useMemo
+- Sorting operations optimized and memoized
+- Preprocessing cache for transfer matching
+- Clear cache function exposed for manual invalidation
+
+### Virtual Rendering
+- Transaction lists use virtualization
+- Only visible items are rendered
+- Dynamic sizing based on content
+- Smooth scrolling with minimal performance impact
+
+## Transaction Manipulation
+
+### Editing
+- Direct modification of transaction properties
+- Updates propagated through onUpdate handlers
+- Optimistic UI updates with async confirmation
+
+### Splitting
+- Original transaction preserved in history
+- Multiple new transactions created with distributed amounts
+- Sum validation ensures split equals original
+- Category can be assigned per split item 
